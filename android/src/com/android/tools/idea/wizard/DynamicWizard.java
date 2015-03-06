@@ -35,7 +35,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.List;
 import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -251,7 +250,14 @@ public abstract class DynamicWizard implements ScopedStateStore.ScopedStoreListe
     JComponent component = step.getComponent();
     Icon icon = step.getIcon();
     myHost.setIcon(icon);
-    ((CardLayout)myContentPanel.getLayout()).show(myContentPanel, myComponentToIdMap.get(component));
+    // Store a reference to this component.
+    String id = myComponentToIdMap.get(component);
+    if (id == null) {
+      id = String.valueOf(myComponentToIdMap.size());
+      myComponentToIdMap.put(component, id);
+      myContentPanel.add(component, id);
+    }
+    ((CardLayout)myContentPanel.getLayout()).show(myContentPanel, id);
 
     JComponent focusedComponent = step.getPreferredFocusedComponent();
     if (focusedComponent != null) {
@@ -457,20 +463,6 @@ public abstract class DynamicWizard implements ScopedStateStore.ScopedStoreListe
   }
 
   public final void show() {
-    // All steps must be included so the window can be sized correctly
-    for (AndroidStudioWizardPath path : myPaths) {
-      for (DynamicWizardStep step : ((DynamicWizardPath)path).mySteps) {
-        JComponent component = step.getComponent();
-        String id = myComponentToIdMap.get(component);
-        if (id == null) {
-          id = String.valueOf(myComponentToIdMap.size());
-          myComponentToIdMap.put(component, id);
-          myContentPanel.add(component, id);
-        }
-      }
-    }
-
-    SwingUtilities.getWindowAncestor(myContentPanel).pack();
     myHost.show();
   }
 
