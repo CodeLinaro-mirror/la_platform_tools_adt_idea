@@ -19,6 +19,7 @@ import com.android.tools.idea.editors.gfxtrace.controllers.*;
 import com.android.tools.idea.editors.gfxtrace.controllers.modeldata.AtomNode;
 import com.android.tools.idea.editors.gfxtrace.controllers.modeldata.HierarchyNode;
 import com.android.tools.idea.editors.gfxtrace.renderers.ScrubberCellRenderer;
+import com.android.tools.idea.editors.gfxtrace.service.Factory;
 import com.android.tools.idea.editors.gfxtrace.service.Schema;
 import com.android.tools.idea.editors.gfxtrace.service.ServiceClient;
 import com.android.tools.idea.editors.gfxtrace.service.ServiceClientCache;
@@ -28,8 +29,8 @@ import com.android.tools.idea.editors.gfxtrace.service.atom.AtomMetadata;
 import com.android.tools.idea.editors.gfxtrace.service.path.CapturePath;
 import com.android.tools.idea.editors.gfxtrace.service.path.Path;
 import com.android.tools.idea.editors.gfxtrace.service.path.PathListener;
-import com.android.tools.rpclib.binary.Namespace;
-import com.android.tools.rpclib.schema.*;
+import com.android.tools.rpclib.schema.Dynamic;
+import com.android.tools.rpclib.schema.SchemaClass;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -100,7 +101,7 @@ public class GfxTraceEditor extends UserDataHolderBase implements FileEditor, Sc
 
     try {
       if (connectToServer()) {
-        ServiceClient rpcClient = new ServiceClientRPC(myService , myServerSocket.getInputStream(), myServerSocket.getOutputStream(), 1024);
+        ServiceClient rpcClient = new ServiceClientRPC(myService, myServerSocket.getInputStream(), myServerSocket.getOutputStream(), 1024);
         myClient = new ServiceClientCache(rpcClient);
 
         // prefetch the schema
@@ -137,16 +138,19 @@ public class GfxTraceEditor extends UserDataHolderBase implements FileEditor, Sc
               myClient.getSchema().get();
               if (path != null) {
                 activatePath(path);
-              } else {
-                LOG.error("Invalid capture file "+ file.getPresentableName());
+              }
+              else {
+                LOG.error("Invalid capture file " + file.getPresentableName());
               }
             }
-            catch (InterruptedException e) {}
-            catch (ExecutionException e) {}
+            catch (InterruptedException ignored) {
+            }
+            catch (ExecutionException ignored) {
+            }
           }
 
           @Override
-          public void onFailure(Throwable t) {
+          public void onFailure(@NotNull Throwable t) {
             LOG.error(t);
           }
         });
@@ -284,18 +288,19 @@ public class GfxTraceEditor extends UserDataHolderBase implements FileEditor, Sc
     myService.shutdown();
   }
 
-  private void sleepThread(int milliseconds) {
+  private static void sleepThread(int milliseconds) {
     try {
       Thread.sleep(milliseconds);
-    } catch (InterruptedException e) {
+    }
+    catch (InterruptedException ignored) {
     }
   }
 
   /**
    * Attempts to connect to a gapis server.
-   *
+   * <p/>
    * If the first attempt to connect fails, will launch a new server process and attempt to connect again.
-   *
+   * <p/>
    * TODO: Implement more robust process management.  For example:
    * TODO: - Launch the new process in a separate thread so the GUI doesn't hang while the process is starting.
    * TODO: - Better handling of shutdown so that the replayd process does not continue running.
@@ -304,12 +309,13 @@ public class GfxTraceEditor extends UserDataHolderBase implements FileEditor, Sc
    * @return true if a connection to the server was established.
    */
   private boolean connectToServer() {
-    com.android.tools.idea.editors.gfxtrace.service.Factory.register();
+    Factory.register();
     myServerSocket = null;
     try {
       // Try to connect to an existing server.
       myServerSocket = new Socket(SERVER_HOST, SERVER_PORT);
-    } catch (IOException e) {
+    }
+    catch (IOException e) {
       myServerSocket = null;
     }
 
@@ -339,10 +345,12 @@ public class GfxTraceEditor extends UserDataHolderBase implements FileEditor, Sc
 
           // This will throw IOException if the server executable is not found.
           myServerProcess = pb.start();
-        } else {
+        }
+        else {
           LOG.error("baseDirectory is not a directory: \"" + baseDirectory.getAbsolutePath() + "\"");
         }
-      } catch (IOException e) {
+      }
+      catch (IOException e) {
         LOG.warn(e);
       }
       if (myServerProcess != null) {
@@ -353,7 +361,8 @@ public class GfxTraceEditor extends UserDataHolderBase implements FileEditor, Sc
              waitTime += SERVER_LAUNCH_SLEEP_INCREMENT_MS) {
           try {
             myServerSocket = new Socket(SERVER_HOST, SERVER_PORT);
-          } catch (IOException e1) {
+          }
+          catch (IOException e1) {
             myServerSocket = null;
             // Wait before trying again.
             sleepThread(SERVER_LAUNCH_SLEEP_INCREMENT_MS);
