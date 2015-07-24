@@ -971,6 +971,7 @@ public class ConfigureAvdOptionsStep extends DynamicWizardStepWithDescription {
         case TV:
         case HIGH:
         case DPI_280:
+        case DPI_360:
           vmHeapSize = 64;
           break;
         case XHIGH:
@@ -994,6 +995,7 @@ public class ConfigureAvdOptionsStep extends DynamicWizardStepWithDescription {
         case TV:
         case HIGH:
         case DPI_280:
+        case DPI_360:
           vmHeapSize = 32;
           break;
         case XHIGH:
