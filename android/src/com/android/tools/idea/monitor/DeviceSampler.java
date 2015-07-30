@@ -23,10 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public abstract class DeviceSampler implements Runnable {
   /**
@@ -57,6 +54,7 @@ public abstract class DeviceSampler implements Runnable {
   @Nullable protected volatile Client myClient;
   @NotNull private final Semaphore myDataSemaphore;
   protected volatile boolean myRunning;
+  protected volatile CountDownLatch myTaskStatus;
 
   public DeviceSampler(@NotNull TimelineData data, int sampleFrequencyMs) {
     myData = data;
@@ -68,6 +66,7 @@ public abstract class DeviceSampler implements Runnable {
   public void start() {
     if (myExecutingTask == null && myClient != null) {
       myRunning = true;
+      myTaskStatus = new CountDownLatch(1);
       myExecutingTask = ApplicationManager.getApplication().executeOnPooledThread(this);
       myClient.setHeapInfoUpdateEnabled(true);
 
@@ -84,16 +83,12 @@ public abstract class DeviceSampler implements Runnable {
       myDataSemaphore.release();
       myData.clear();
 
+      myExecutingTask.cancel(true);
       try {
-        // Wait for the task to finish.
-        myExecutingTask.get();
+        myTaskStatus.await();
       }
-      catch (InterruptedException e) {
-        // Ignore
-      }
-      catch (ExecutionException e) {
-        // Rethrow the original cause of the exception on this thread.
-        throw new RuntimeException(e.getCause());
+      catch (InterruptedException ignored) {
+        // We're stopping anyway, so just ignore the interruption.
       }
 
       if (myClient != null) {
@@ -154,6 +149,7 @@ public abstract class DeviceSampler implements Runnable {
         myRunning = false;
       }
     }
+    myTaskStatus.countDown();
   }
 
   @NotNull
