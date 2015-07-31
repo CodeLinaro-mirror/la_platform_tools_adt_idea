@@ -1298,7 +1298,7 @@ Function fnc_InstallDirsPage_Leave
             Abort
         ${Endif}
 
-        ${StrContains} $R1 $s_SdkPath $s_StudioPath
+        ${StrContains} $R1 "$s_SdkPath\" "$s_StudioPath\"
         ${If} $R1 != 0
             MessageBox MB_OK|MB_ICONEXCLAMATION \
             "You are attempting to install the Android SDK inside your Android Studio installation.$\r$\n \
@@ -1314,13 +1314,13 @@ Function fnc_InstallDirsPage_Leave
             StrCpy $R0 $PROGRAMFILES64
         ${EndIf}
 
-        ${StrContains} $R1 $s_SdkPath $R0
+        ${StrContains} $R1 "$s_SdkPath\" "$R0\"
         ${If} $R1 != 0
             MessageBox MB_YESNO|MB_ICONQUESTION \
             "Android Studio periodically updates your SDK to make sure your files are up to date. \
             To avoid getting errors when updating, we recommend installing your SDK into a user directory with read/write access.$\r$\n \
             $\r$\n \
-            Do you want to update the SDK installation path?" IDYES updateSdkPath IDNO ignoreWarning
+            Do you want to change your SDK installation path?" IDYES updateSdkPath IDNO ignoreWarning
             updateSdkPath:
                 StrCpy $s_SdkPath $s_DefaultSdkPath
                 ${NSD_SetText} $hCtl_InstallDirsPage_DirRequestSdk_Txt $s_SdkPath
