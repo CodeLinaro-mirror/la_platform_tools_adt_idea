@@ -183,8 +183,8 @@ VIAddVersionKey LegalCopyright ""
 ShowUninstDetails hide
 
 # Page Constants
-!define JDK_EXE_32 "jdk-7u67-windows-i586.exe" # TODO: Stop hardcoding these after Studio 1.0
-!define JDK_EXE_64 "jdk-7u67-windows-x64.exe"
+!define JDK_EXE_32 "jdk-7u79-windows-i586.exe" # 7u79 is the last public release for JDK 7
+!define JDK_EXE_64 "jdk-7u79-windows-x64.exe"
 !define JDK_LINK "http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html"
 
 # Variables
