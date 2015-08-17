@@ -976,6 +976,7 @@ public class ConfigureAvdOptionsStep extends DynamicWizardStepWithDescription {
           break;
         case XHIGH:
         case DPI_400:
+        case DPI_420:
         case XXHIGH:
         case DPI_560:
         case XXXHIGH:
@@ -1000,6 +1001,7 @@ public class ConfigureAvdOptionsStep extends DynamicWizardStepWithDescription {
           break;
         case XHIGH:
         case DPI_400:
+        case DPI_420:
         case XXHIGH:
         case DPI_560:
         case XXXHIGH:
