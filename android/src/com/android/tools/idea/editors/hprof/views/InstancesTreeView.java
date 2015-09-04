@@ -56,6 +56,7 @@ import java.util.List;
 
 public class InstancesTreeView implements DataProvider {
   public static final String TREE_NAME = "HprofInstancesTree";
+  public static final DataKey<ClassInstance> SELECTED_CLASS_INSTANCE = DataKey.create("HprofInstanceTreeView.SelectedClassInstance");
 
   private static final int NODES_PER_EXPANSION = 100;
 
@@ -152,7 +153,7 @@ public class InstancesTreeView implements DataProvider {
     myDebuggerTree.putClientProperty(DataManager.CLIENT_PROPERTY_DATA_PROVIDER, this);
     JBList contextActionList = new JBList(new EditMultipleSourcesAction());
     JBPopupFactory.getInstance().createListPopupBuilder(contextActionList);
-    final DefaultActionGroup popupGroup = new DefaultActionGroup(new EditMultipleSourcesAction());
+    final DefaultActionGroup popupGroup = new DefaultActionGroup(new EditMultipleSourcesAction(), new ViewBitmapAction());
     myDebuggerTree.addMouseListener(new PopupHandler() {
       @Override
       public void invokePopup(Component comp, int x, int y) {
@@ -609,6 +610,9 @@ public class InstancesTreeView implements DataProvider {
     else if (CommonDataKeys.PROJECT.is(dataId)) {
       return myProject;
     }
+    else if (SELECTED_CLASS_INSTANCE.is(dataId)){
+      return getSelectedClassInstance();
+    }
     return null;
   }
 
@@ -636,5 +640,20 @@ public class InstancesTreeView implements DataProvider {
     }
 
     return PsiFileAndLineNavigation.wrappersForClassName(myProject, className, 0);
+  }
+
+  @Nullable
+  private ClassInstance getSelectedClassInstance(){
+    Object node = myDebuggerTree.getSelectionPath().getLastPathComponent();
+    if (node instanceof DebuggerTreeNodeImpl) {
+      NodeDescriptorImpl nodeDescriptor = ((DebuggerTreeNodeImpl)node).getDescriptor();
+      if (nodeDescriptor instanceof InstanceFieldDescriptorImpl) {
+        Instance instance = ((InstanceFieldDescriptorImpl)nodeDescriptor).getInstance();
+        if (instance instanceof ClassInstance){
+          return (ClassInstance)instance;
+        }
+      }
+    }
+    return null;
   }
 }

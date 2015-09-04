@@ -221,7 +221,7 @@ public class BitmapEvaluator {
     return null;
   }
 
-  private static BufferedImage createBufferedImage(int width, int height, byte[] rgba) {
+  public static BufferedImage createBufferedImage(int width, int height, byte[] rgba) {
     @SuppressWarnings("UndesirableClassUsage")
     BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
